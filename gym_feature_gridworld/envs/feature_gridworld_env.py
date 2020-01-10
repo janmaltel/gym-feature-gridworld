@@ -81,8 +81,8 @@ class FeatureGridworldEnv(gym.Env):
                  use this for learning.
         """
         assert action in self.action_names.keys()
-        if np.random.uniform(0, 1) < self.stochasticity_eps:
-            action = np.random.choice(FeatureGridworldEnv.action_names.keys())
+        # if np.random.uniform(0, 1) < self.stochasticity_eps:
+        #     action = np.random.choice(FeatureGridworldEnv.action_names.keys())
 
         old_position = self.agent_position.copy()
         new_position = self.agent_position.copy()
