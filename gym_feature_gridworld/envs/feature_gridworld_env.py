@@ -180,6 +180,7 @@ class FeatureGridworldEnv(gym.Env):
             self.agent_position = np.array([0, 1])
         else:
             raise NotImplementedError
+        self.num_remaining_gold = np.sum(self.grid == "g")
         assert self.num_remaining_gold > 0
         assert (self.num_rows, self.num_rows) == self.grid.shape
         self.done = False
