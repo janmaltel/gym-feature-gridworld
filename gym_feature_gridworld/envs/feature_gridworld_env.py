@@ -3,6 +3,7 @@ import numpy as np
 from gym import error, spaces, utils
 from gym.utils import seeding
 
+
 class FeatureGridworldEnv(gym.Env):
     """
     FeatureGridworldEnv
@@ -32,8 +33,17 @@ class FeatureGridworldEnv(gym.Env):
     num_features = int(num_features_per_action * num_actions)  # Note: feature vector for every action!
 
     def __init__(self, num_rows=7, num_cols=7, predefined_layout=True):
+        super(FeatureGridworldEnv, self).__init__()
         self.num_rows = num_rows
         self.num_cols = num_cols
+        assert self.num_cols == self.num_rows, "Only quadratic worlds implemented atm."
+        self.max_dist = self.num_cols - 1  # -1 because agent has to stand somewhere (--> full num_rows/cols not possible)
+        self.max_cumu = self.max_dist * (self.max_dist + 1) / 2 # n * (n+1) / 2
+        self.feature_max_values = np.array([1, 1,                                    # is __ first
+                                            self.max_dist, self.max_dist,            # num of __
+                                            self.max_cumu, self.max_cumu,            # cumulative distances
+                                            self.max_dist - 1, self.max_dist - 1,    # num of __ before __
+                                            self.max_dist])                          # distance to wall
         feature_lower_bounds = np.zeros(FeatureGridworldEnv.num_features)
         feature_upper_bounds = np.ones(FeatureGridworldEnv.num_features)
         self.observation_space = spaces.Box(low=feature_lower_bounds, high=feature_upper_bounds)
@@ -45,9 +55,10 @@ class FeatureGridworldEnv(gym.Env):
         self.grid = np.full(shape=(num_rows, num_cols), fill_value=" ")
         self.num_remaining_gold = np.sum(self.grid == "g")
         self.agent_position = np.array([0, 0])
-        self.rewards = {" ": -1,
-                        "g": 10,
-                        "f": -5}
+        self.rewards = {" ": -1,  # Transition into empty cell
+                        "A": -1,  # Hitting the wall (staying on the same cell)
+                        "g": 10,  # Gold
+                        "f": -5}  # Fire
         self.done = False
         self.predefined_layout = True
         self.reset()
@@ -103,7 +114,7 @@ class FeatureGridworldEnv(gym.Env):
         self.done = self.check_terminal()
         ob = self._get_feature_values()
 
-        return ob, reward, self.done, None
+        return ob, reward, self.done, {}
 
     def _get_feature_values(self):
         features = np.zeros(self.num_features)
@@ -123,6 +134,7 @@ class FeatureGridworldEnv(gym.Env):
                 features[(3 * self.num_features_per_action): (4 * self.num_features_per_action)] \
                     = self._feature_values_of_vector(self.grid[self.agent_position[0],
                                                      :self.agent_position[1]][::-1])
+        features = features / self.feature_max_values
         return features
 
     def _feature_values_of_vector(self, gaze):
@@ -184,6 +196,8 @@ class FeatureGridworldEnv(gym.Env):
         assert self.num_remaining_gold > 0
         assert (self.num_rows, self.num_rows) == self.grid.shape
         self.done = False
+        ob = self._get_feature_values()
+        return ob
 
     def render(self, mode='human'):
         self._print_world()
