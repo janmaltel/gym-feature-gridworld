@@ -134,7 +134,6 @@ class FeatureGridworldEnv(gym.Env):
                 features[(3 * self.num_features_per_action): (4 * self.num_features_per_action)] \
                     = self._feature_values_of_vector(self.grid[self.agent_position[0],
                                                      :self.agent_position[1]][::-1])
-        features = features / self.feature_max_values
         return features
 
     def _feature_values_of_vector(self, gaze):
@@ -175,6 +174,7 @@ class FeatureGridworldEnv(gym.Env):
             elif cell == "w":
                 features[8] = ix
                 break
+        features = features / self.feature_max_values
         return features
 
     def check_terminal(self):
