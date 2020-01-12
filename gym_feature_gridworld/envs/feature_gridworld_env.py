@@ -53,7 +53,7 @@ class FeatureGridworldEnv(gym.Env):
 
         ''' -- -- Create grid -- -- '''
         self.grid = np.full(shape=(num_rows, num_cols), fill_value=" ")
-        self.num_remaining_gold = np.sum(self.grid == "g")
+        self.num_remaining_gold = int(np.sum(self.grid == "g"))
         self.agent_position = np.array([0, 0])
         self.rewards = {" ": -1,  # Transition into empty cell
                         "A": -1,  # Hitting the wall (staying on the same cell)
@@ -192,7 +192,7 @@ class FeatureGridworldEnv(gym.Env):
             self.agent_position = np.array([0, 1])
         else:
             raise NotImplementedError
-        self.num_remaining_gold = np.sum(self.grid == "g")
+        self.num_remaining_gold = int(np.sum(self.grid == "g"))
         assert self.num_remaining_gold > 0
         assert (self.num_rows, self.num_rows) == self.grid.shape
         self.done = False
