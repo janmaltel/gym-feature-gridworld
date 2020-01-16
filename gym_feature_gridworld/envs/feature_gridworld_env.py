@@ -50,6 +50,8 @@ class FeatureGridworldEnv(gym.Env):
         self.action_space = spaces.Discrete(FeatureGridworldEnv.num_actions)
         # self.stochasticity_eps = 0
         self.compass = FeatureGridworldEnv.compass
+        self.observation_space_per_action = spaces.Box(low=feature_lower_bounds[:self.num_features_per_action],
+                                                       high=feature_upper_bounds[:self.num_features_per_action])
 
         ''' -- -- Create grid -- -- '''
         self.grid = np.full(shape=(num_rows, num_cols), fill_value=" ")
@@ -209,6 +211,3 @@ class FeatureGridworldEnv(gym.Env):
     def close(self):
         pass
 
-
-env = FeatureGridworldEnv()
-env.step(1)
