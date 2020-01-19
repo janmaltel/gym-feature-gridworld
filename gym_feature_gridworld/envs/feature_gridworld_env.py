@@ -32,7 +32,7 @@ class FeatureGridworldEnv(gym.Env):
     num_features_per_action = len(feature_names)
     num_features = int(num_features_per_action * num_actions)  # Note: feature vector for every action!
 
-    def __init__(self, num_rows=7, num_cols=7, predefined_layout=True):
+    def __init__(self, num_rows=7, num_cols=7, predefined_layout="no_hidden_gold"):
         super(FeatureGridworldEnv, self).__init__()
         self.num_rows = num_rows
         self.num_cols = num_cols
@@ -62,7 +62,7 @@ class FeatureGridworldEnv(gym.Env):
                         "g": 10,  # Gold
                         "f": -5}  # Fire
         self.done = False
-        self.predefined_layout = True
+        self.predefined_layout = predefined_layout
         self.reset()
 
     def step(self, action):
@@ -183,9 +183,18 @@ class FeatureGridworldEnv(gym.Env):
         return self.num_remaining_gold == 0
 
     def reset(self):
-        if self.predefined_layout:
+        if self.predefined_layout == "hidden_gold":
             self.grid = np.flipud(np.array([["g", "f", " ", " ", " ", " ", "g"],    # top
-                                            ["w", " ", "f", "w", "w", "w", "f"],
+                                            ["w", " ", " ", "w", "w", "w", "f"],
+                                            ["g", " ", " ", "f", " ", " ", "g"],
+                                            [" ", "w", " ", " ", " ", " ", "f"],
+                                            [" ", "f", "w", "w", "f", " ", " "],
+                                            [" ", " ", "g", "f", "g", "g", "g"],
+                                            ["f", "A", "f", "g", " ", "f", "f"]]))  # bottom
+            self.agent_position = np.array([0, 1])
+        elif self.predefined_layout == "no_hidden_gold":
+            self.grid = np.flipud(np.array([[" ", "f", " ", " ", " ", " ", "g"],    # top
+                                            ["w", " ", " ", " ", "w", "w", "f"],
                                             ["g", " ", " ", "f", " ", " ", "g"],
                                             [" ", "w", " ", " ", " ", " ", "f"],
                                             [" ", "f", "w", "w", "f", " ", " "],
