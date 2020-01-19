@@ -57,6 +57,7 @@ class FeatureGridworldEnv(gym.Env):
         self.grid = np.full(shape=(num_rows, num_cols), fill_value=" ")
         self.num_remaining_gold = int(np.sum(self.grid == "g"))
         self.agent_position = np.array([0, 0])
+        self.last_pos_was_fire = False
         self.rewards = {" ": -1,  # Transition into empty cell
                         "A": -1,  # Hitting the wall (staying on the same cell)
                         "g": 10,  # Gold
@@ -107,9 +108,17 @@ class FeatureGridworldEnv(gym.Env):
 
         new_cell = self.grid[new_position[0], new_position[1]]
         reward = self.rewards[new_cell]
+        if self.last_pos_was_fire:
+            # Fire is still burning even if leaving the field.
+            self.grid[old_position[0], old_position[1]] = "f"
+        else:
+            self.grid[old_position[0], old_position[1]] = " "
+
         if new_cell == "g":
             self.num_remaining_gold -= 1
-        self.grid[old_position[0], old_position[1]] = " "
+        elif new_cell == "f":
+            self.last_pos_was_fire = True
+
         self.grid[new_position[0], new_position[1]] = "A"
         self.agent_position = new_position
 
@@ -207,6 +216,7 @@ class FeatureGridworldEnv(gym.Env):
         assert self.num_remaining_gold > 0
         assert (self.num_rows, self.num_rows) == self.grid.shape
         self.done = False
+        self.last_pos_was_fire = False
         ob = self._get_feature_values()
         return ob
 
