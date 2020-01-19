@@ -167,7 +167,7 @@ class FeatureGridworldEnv(gym.Env):
                     features[6] += 1
             elif cell == "g":
                 if ix == 0:
-                    features[0] = 1
+                    features[1] = 1
                 features[3] += 1
                 features[5] += ix
                 has_found_gold = True
