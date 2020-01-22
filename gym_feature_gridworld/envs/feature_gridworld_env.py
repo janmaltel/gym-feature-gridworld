@@ -32,7 +32,7 @@ class FeatureGridworldEnv(gym.Env):
                      # 4: "cumu_dist_fires", 5: "cumu_dist_golds",
                      "num_fire_before_gold",
                      "num_gold_before_fire",
-                     # "distance_to_wall",
+                     "distance_to_wall",
                      "is_first_wall"]
 
     # feature_names = {0: "is_first_fire", 1: "is_first_gold",
@@ -44,7 +44,7 @@ class FeatureGridworldEnv(gym.Env):
     num_features_per_action = len(feature_names)
     num_features = int(num_features_per_action * num_actions)  # Note: feature vector for every action!
 
-    def __init__(self, num_rows=7, num_cols=7, predefined_layout="no_hidden_gold"):
+    def __init__(self, num_rows=7, num_cols=7, predefined_layout="simple"):
         super(FeatureGridworldEnv, self).__init__()
         self.num_rows = num_rows
         self.num_cols = num_cols
@@ -55,7 +55,7 @@ class FeatureGridworldEnv(gym.Env):
                                             # self.max_dist, self.max_dist,            # num of __
                                             # self.max_cumu, self.max_cumu,            # cumulative distances
                                             self.max_dist - 1, self.max_dist - 1,    # num of __ before __
-                                            # self.max_dist,                           # distance to wall
+                                            self.max_dist,                           # distance to wall
                                             1                                        # is wall first
                                             ])
         feature_lower_bounds = np.zeros(FeatureGridworldEnv.num_features)
@@ -187,7 +187,7 @@ class FeatureGridworldEnv(gym.Env):
         len_gaze = len(gaze)
         # features[4] = len_gaze
         if len_gaze == 0:
-            features[4] = 1
+            features[5] = 1
         for ix in range(len_gaze):
             cell = gaze[ix]
             if cell == "f":
@@ -208,8 +208,8 @@ class FeatureGridworldEnv(gym.Env):
                     features[3] += 1
             elif cell == "w":
                 if ix == 0:
-                    features[4] = 1
-                # features[4] = ix
+                    features[5] = 1
+                features[4] = ix
                 break
         features = features / self.feature_max_values
         return features
@@ -259,7 +259,16 @@ class FeatureGridworldEnv(gym.Env):
         return self.num_remaining_gold == 0
 
     def reset(self):
-        if self.predefined_layout == "hidden_gold":
+        if self.predefined_layout == "simple":
+            self.plot_grid = np.flipud(np.array([["g", "f", " ", " ", " ", "g", "g"],  # top
+                                                 [" ", " ", " ", " ", "w", " ", "f"],
+                                                 ["g", " ", " ", "f", " ", " ", "g"],
+                                                 [" ", " ", " ", " ", " ", " ", " "],
+                                                 [" ", "f", "w", " ", "f", " ", " "],
+                                                 [" ", " ", " ", " ", "g", "g", "g"],
+                                                 ["f", "A", " ", "g", " ", "f", "f"]]))  # bottom
+            self.agent_position = np.array([0, 1])
+        elif self.predefined_layout == "hidden_gold":
             self.plot_grid = np.flipud(np.array([["g", "f", " ", " ", " ", " ", "g"],  # top
                                                  ["w", " ", " ", "w", "w", "w", "f"],
                                                  ["g", " ", " ", "f", " ", " ", "g"],
